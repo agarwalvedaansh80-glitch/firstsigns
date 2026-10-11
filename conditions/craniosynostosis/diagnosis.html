@@ -14,9 +14,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../assets/bootstrap.min.css">
 <link rel="stylesheet" href="../../assets/style.css">
-<script>/* show the registration dialog from the very first frame */try{if(!localStorage.getItem("fs_me"))document.documentElement.classList.add("reg-lock","reg-instant")}catch(e){}</script>
+<script>/* registration dialog from the first frame; opening door once per visit */(function(){var d=document.documentElement;try{if(!localStorage.getItem("fs_me"))d.classList.add("reg-lock","reg-instant")}catch(e){}var r=false;try{r=matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){}if(!r){var seen=false;try{seen=!!sessionStorage.getItem("fs_door")}catch(e){seen=!/(\/|index\.html)$/.test(location.pathname)}if(!seen)d.classList.add("door-on","fs-wait")}setTimeout(function(){d.classList.remove("fs-wait")},9000)})()</script>
 </head>
 <body data-prefix="../../">
+<div class="fs-door" id="fsDoor" aria-hidden="true"><i><div class="dm"><svg class="dlogo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="10" fill="#0F2E52" stroke="#3E6E8E"/><path d="M9 29.5 Q 22 21.5 35 29.5" fill="none" stroke="#7FB6C6" stroke-width="2.2" stroke-linecap="round"/><path d="M9 34 Q 22 27.5 35 34" fill="none" stroke="#3E6E8E" stroke-width="1.6" stroke-linecap="round" opacity="0.8"/><circle cx="22" cy="16.5" r="4.6" fill="#E8B84B"/></svg><svg class="dw" viewBox="0 0 1000 190" aria-hidden="true"><text x="500" y="146" text-anchor="middle">First Signs</text></svg><div class="db"><b></b></div><p class="ds">Craniosynostosis awareness and family navigation</p></div></i><i><div class="dm"><svg class="dlogo" viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="10" fill="#0F2E52" stroke="#3E6E8E"/><path d="M9 29.5 Q 22 21.5 35 29.5" fill="none" stroke="#7FB6C6" stroke-width="2.2" stroke-linecap="round"/><path d="M9 34 Q 22 27.5 35 34" fill="none" stroke="#3E6E8E" stroke-width="1.6" stroke-linecap="round" opacity="0.8"/><circle cx="22" cy="16.5" r="4.6" fill="#E8B84B"/></svg><svg class="dw" viewBox="0 0 1000 190" aria-hidden="true"><text x="500" y="146" text-anchor="middle">First Signs</text></svg><div class="db"><b></b></div><p class="ds">Craniosynostosis awareness and family navigation</p></div></i></div>
 <a class="skip" href="#main">Skip to content</a>
 <div class="preloader" id="preloader" aria-hidden="true"><div class="pre-mark"><svg class="fs-logo" viewBox="0 0 44 44" role="img" aria-label="First Signs mark" xmlns="http://www.w3.org/2000/svg">
 <rect x="1" y="1" width="42" height="42" rx="10" fill="#0F2E52"/>
@@ -123,7 +124,7 @@
 </div></div>
 <div class="container"><div class="pager no-print"><a class="pager-link prev" href="../../conditions/craniosynostosis/syndromic.html"><span class="pager-eyebrow">Previous</span><span>Syndromic craniosynostosis</span></a><a class="pager-link next" href="../../conditions/craniosynostosis/treatment.html"><span class="pager-eyebrow">Next</span><span>Treatment options explained</span></a></div></div>
 
-<section class="container review-block" aria-label="Medical review record">
+<div class="container review-wrap"><section class="review-block" aria-label="Medical review record">
   <div class="row g-3 align-items-start">
     <div class="col-12"><h2 class="review-title">Medical review record</h2></div>
     <div class="col-6 col-lg-3"><span class="review-label">Reviewer</span><span>[to be confirmed] Review by the First Signs medical panel is pending</span></div>
@@ -133,7 +134,7 @@
   </div>
   <details class="review-sources"><summary>Sources for this page</summary><ul><li>CDC: Craniosynostosis, Birth Defects (accessed for this draft): premature fusion of skull sutures and its effect on skull growth and shape</li><li>NHS: Craniosynostosis (accessed for this draft)</li><li>Source basis: CDC describes clinical assessment and CT as a tool that can show skull and brain detail; specialist evaluation remains essential.</li></ul></details>
   <p class="review-note mb-0">First Signs provides general educational information only. It does not diagnose, treat or replace a consultation with a qualified medical professional.</p>
-</section>
+</section></div>
 <div class="container share-row no-print">
   <button class="btn btn-ghost btn-sm" type="button" onclick="FS.printPage()">Print this page</button>
 </div>
