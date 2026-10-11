@@ -880,3 +880,69 @@ html.reg-lock .fx-glow{display:none}
 .mission-band{border-left:4px solid var(--fs-gold,#E8B84B);margin:1.6rem 0 .6rem;padding:1.4rem 1.5rem}
 .mission-line{font-family:'Libre Franklin',sans-serif;font-weight:700;color:var(--fs-navy,#0F2E52);font-size:clamp(1.2rem,2.3vw,1.5rem);line-height:1.35;margin:.2rem 0 .8rem}
 #gaps + p + .table-responsive th{white-space:normal}
+
+/* ===== v6: opening door, consent lock, calmer motion, tighter layout ===== */
+.fs-door{display:none}
+html.door-on .fs-door{position:fixed;inset:0;z-index:30000;display:flex;cursor:pointer}
+html.door-on,html.door-on body{overflow:hidden!important}
+.fs-door i{flex:1;position:relative;overflow:hidden;font-style:normal;background:radial-gradient(900px 520px at 50% 40%,#123A63 0%,#0B2340 62%,#081A31 100%);transition:transform 1.25s cubic-bezier(.77,0,.18,1)}
+.fs-door i:first-child{box-shadow:inset -1px 0 0 rgba(232,184,75,.35)}
+.fs-door i:last-child{box-shadow:inset 1px 0 0 rgba(232,184,75,.35)}
+.fs-door .dm{position:absolute;top:0;bottom:0;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.fs-door i:first-child .dm{left:0}
+.fs-door i:last-child .dm{right:0}
+.fs-door .dlogo{width:54px;height:54px;opacity:0;animation:fsdUp .8s .05s cubic-bezier(.2,.7,.2,1) forwards}
+.fs-door .dw{width:min(88vw,860px);height:auto;overflow:visible;display:block}
+.fs-door text{font-family:"Libre Franklin",system-ui,sans-serif;font-weight:700;font-size:150px;letter-spacing:-5px;fill:rgba(232,184,75,0);stroke:#E8B84B;stroke-width:1.4;stroke-dasharray:1500;stroke-dashoffset:1500;animation:fsdDraw 1.7s cubic-bezier(.6,.1,.2,1) .15s forwards,fsdFill .8s 1.4s ease forwards}
+.fs-door .db{width:min(60vw,380px);height:2px;background:rgba(255,255,255,.12);overflow:hidden;border-radius:2px}
+.fs-door .db b{display:block;height:100%;background:linear-gradient(90deg,#0E7490,#E8B84B);transform-origin:left;transform:scaleX(0);animation:fsdBar 1.9s cubic-bezier(.6,.1,.2,1) forwards}
+.fs-door .ds{margin:0;padding:0 20px;text-align:center;font:600 12px/1.5 "Public Sans",system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#A9C3D6;opacity:0;animation:fsdUp .8s .7s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes fsdDraw{to{stroke-dashoffset:0}}
+@keyframes fsdFill{to{fill:rgba(232,184,75,.16)}}
+@keyframes fsdBar{to{transform:scaleX(1)}}
+@keyframes fsdUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+html.door-open .fs-door{pointer-events:none}
+html.door-open .fs-door i:first-child{transform:translateX(-101%)}
+html.door-open .fs-door i:last-child{transform:translateX(101%)}
+html.door-open .fs-door .dm{transition:opacity .5s;opacity:.0}
+@media (max-width:600px){.fs-door .ds{font-size:10px;letter-spacing:.22em}.fs-door .dlogo{width:44px;height:44px}}
+html.fs-wait .draft-ribbon,html.fs-wait .site-header,html.fs-wait main,html.fs-wait .site-footer{opacity:0}
+/* Register locked until consent */
+[data-reg-form] button[type=submit]:disabled{opacity:.42;filter:grayscale(.35);cursor:not-allowed;pointer-events:auto;box-shadow:none}
+[data-reg-form] button[type=submit]:disabled::after{display:none}
+.consent-hint{margin:-.35rem 0 .6rem;font-size:.78rem;color:#9A6A12;font-weight:600;min-height:0}
+.consent-hint:not(.on){display:none}
+[data-reg-form] .form-check{padding:.7rem .8rem .7rem 2.3rem;border:1px solid var(--fs-line);border-radius:10px;background:#F7FAFC;transition:border-color .25s,background .25s}
+[data-reg-form].consent-ok .form-check{border-color:var(--fs-teal-line);background:#EEF7F9}
+[data-reg-form] .form-check-input{margin-top:.2rem}
+
+/* calmer motion: nothing loops that makes the page work hard */
+.hero::before{animation:none}
+.page-pad h2::after,.hgal-head h2::after{animation:none}
+.hgal-n,.story-num small{animation:none}
+.fx-glow{display:none!important}
+.foot-giant{display:none}
+.fx-lens{-webkit-backdrop-filter:none;backdrop-filter:none}
+
+/* layout: everything lines up with the content column */
+.container.ph-inner{max-width:1100px}
+.ph-inner > *{max-width:min(100%,680px)}
+.ph-inner > .rail{max-width:min(100%,760px)}
+.page-head{min-height:0}
+.ph-inner{padding:2.4rem 0 1.8rem}
+@media(max-width:767px){.ph-art{opacity:.22;right:-18%;width:60%}.ph-orb{opacity:.35}.ph-inner{padding:1.8rem 0 1.4rem}}
+.review-wrap{margin-top:1.4rem}
+.review-wrap .review-block{margin-top:0}
+.kb-text{max-width:none}
+.page-pad{padding-top:2.2rem;padding-bottom:1.6rem}
+.page-pad h2{margin-top:1.8em}
+.pager{margin-top:1.4rem}
+.share-row{margin-top:.8rem;margin-bottom:2rem}
+.hero-ctas{margin-bottom:0}
+.page-body > .hero-ctas,.page-body .hero-ctas{margin-top:1.2rem}
+.story{margin:1.6rem 0 .6rem}
+@media(min-width:992px){.story-pin{min-height:0;padding:1.2rem 0}}
+.hero-inner{padding:3rem 0 2.6rem}
+.hgal{padding-top:2.4rem!important;padding-bottom:2.4rem!important}
+.connect{margin-bottom:0}
+.site-footer{margin-top:2.4rem}

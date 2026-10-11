@@ -108,6 +108,7 @@
     panel.classList.remove("open"); panel.setAttribute("aria-hidden", "true");
     if (backdrop) backdrop.classList.remove("open");
     document.documentElement.classList.remove("reg-lock");
+    try { document.dispatchEvent(new Event("fs:regclosed")); } catch (e) {}
     if (asGuest && !me()) { try { window.sessionStorage.setItem("fs_guest", "1"); } catch (e) {} }
     if (!location.hash) { try { window.scrollTo(0, 0); } catch (e) {} }
     if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
@@ -328,6 +329,23 @@
     });
   });
 
+  /* Register stays locked until the consent box is ticked */
+  function gateConsent(form) {
+    var c = form.querySelector("input[type=checkbox]"), btn = form.querySelector("button[type=submit]");
+    if (!c || !btn) return;
+    var hint = form.querySelector(".consent-hint");
+    if (!hint) { hint = document.createElement("p"); hint.className = "consent-hint"; btn.parentNode.insertBefore(hint, btn); }
+    var sync = function () {
+      btn.disabled = !c.checked; btn.setAttribute("aria-disabled", c.checked ? "false" : "true");
+      hint.textContent = c.checked ? "" : "Tick the consent box above to unlock Register.";
+      hint.classList.toggle("on", !c.checked);
+      form.classList.toggle("consent-ok", c.checked);
+    };
+    c.addEventListener("change", sync); c.addEventListener("input", sync);
+    form._fsSync = sync; sync();
+  }
+  document.querySelectorAll("[data-reg-form]").forEach(gateConsent);
+
   /* pre-fills the panel for registered people who open it themselves */
   function personalisePanel() {
     if (!panel) return;
@@ -342,6 +360,7 @@
       [["name", m.name], ["email", m.email], ["city", m.city]].forEach(function (f) { var i = panel.querySelector("[name=" + f[0] + "]"); if (i && f[1]) i.value = f[1]; });
       var r = panel.querySelector("[name=role]"); if (r && m.role) r.value = m.role;
       var c = panel.querySelector("input[type=checkbox]"); if (c) c.checked = true;
+      var pf = panel.querySelector("[data-reg-form]"); if (pf && pf._fsSync) pf._fsSync();
     }
   }
   (function () {

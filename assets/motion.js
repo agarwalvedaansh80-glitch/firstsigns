@@ -47,8 +47,8 @@
   var hero = document.querySelector(".hero");
   if (canvas && hero && typeof window.THREE !== "undefined" && !reduce) {
     try {
-      var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, powerPreference: "high-performance" });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: false, powerPreference: "low-power" });
+      renderer.setPixelRatio(1);
       renderer.setClearColor(0x000000, 0);
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera(38, 2, 0.1, 100);
@@ -87,10 +87,10 @@
         m.position.set(0.6, y, z); m.rotation.set(rot, 0, -0.16);
         scene.add(m); return m;
       }
-      ribbon(0.55, -1.2, -0.55, 12, 1.5, 140);
-      ribbon(-0.15, -0.4, -0.62, 11, 1.1, 130);
-      ribbon(-0.9, 0.5, -0.7, 10, 0.8, 110);
-      var count = 240, pos = new Float32Array(count * 3), spd = new Float32Array(count);
+      ribbon(0.55, -1.2, -0.55, 12, 1.5, 70);
+      ribbon(-0.15, -0.4, -0.62, 11, 1.1, 64);
+      ribbon(-0.9, 0.5, -0.7, 10, 0.8, 56);
+      var count = 120, pos = new Float32Array(count * 3), spd = new Float32Array(count);
       for (var i = 0; i < count; i++) {
         pos[i*3] = (Math.random() - 0.5) * 14; pos[i*3+1] = (Math.random() - 0.5) * 6; pos[i*3+2] = (Math.random() - 0.5) * 4 - 1;
         spd[i] = 0.2 + Math.random() * 0.8;
@@ -115,10 +115,11 @@
       resize(); window.addEventListener("resize", resize);
       var visible = true;
       onVisible(hero, function (v) { visible = v; }, "0px", false);
-      var clock = new THREE.Clock();
+      var clock = new THREE.Clock(), fskip = false;
       function frame() {
         requestAnimationFrame(frame);
         if (!visible || document.hidden) return;
+        fskip = !fskip; if (fskip) return;
         var t = clock.getElapsedTime();
         uniforms.uTime.value = t;
         mouse.x += (target.x - mouse.x) * 0.04; mouse.y += (target.y - mouse.y) * 0.04;
@@ -143,7 +144,8 @@
   var curtain = document.getElementById("curtain");
   var seenIntro = false;
   try { seenIntro = window.sessionStorage.getItem("fs_intro") === "1"; } catch (e) {}
-  if (pre) {
+  if (pre) { pre.classList.add("done"); }
+  if (false) {
     if (document.documentElement.classList.contains("reg-lock")) {
       /* the registration dialog is the welcome; skip the intro for this visit */
       try { window.sessionStorage.setItem("fs_intro", "1"); } catch (e) {}
@@ -237,10 +239,10 @@
       sizeC(); window.addEventListener("resize", sizeC);
       var pts = []; for (var q = 0; q < 28; q++) pts.push({ x: Math.random() * 1.2, y: Math.random(), r: 1 + Math.random() * 2.2, s: 0.00025 + Math.random() * 0.0006, c: q % 5 === 0 ? "232,184,75" : "14,116,144" });
       var vis = true; onVisible(head, function (v) { vis = v; }, "0px", false);
-      var odd = false;
+      var fr = 0;
       var draw = function (ts) {
         requestAnimationFrame(draw);
-        odd = !odd; if (!vis || odd || document.hidden) return;
+        fr = (fr + 1) % 3; if (!vis || fr || document.hidden) return;
         var t = ts * 0.001; ctx2.clearRect(0, 0, pw, ph);
         for (var b = 0; b < 2; b++) {
           ctx2.beginPath();
@@ -362,10 +364,7 @@
             gsap.fromTo(el, { y: kb ? 34 : 26, opacity: .25, scale: kb ? .965 : .985 },
               { y: 0, opacity: 1, scale: 1, duration: kb ? .9 : .7, delay: (el._fsIdx % 4) * .05, ease: "power3.out", overwrite: true, clearProps: "transform,opacity" });
           }
-        } else if (x.boundingClientRect.top > 0) {
-          /* went back below the fold: arm it to play again */
-          el._fsHidden = true;
-          gsap.set(el, { y: 26, opacity: .25 });
+          ioR.unobserve(el);
         }
       });
     }, { rootMargin: "0px 0px -6% 0px", threshold: 0 });
@@ -375,22 +374,91 @@
       ioR.observe(el);
     });
     /* safety net: anything on screen that is still faded gets restored */
-    setInterval(function () {
-      var vh = window.innerHeight;
+    var safety = setInterval(function () {
+      var vh = window.innerHeight, left = 0;
+      revealEls.forEach(function (el) { if (el._fsHidden) left++; });
+      if (!left) { clearInterval(safety); return; }
       revealEls.forEach(function (el) {
         if (!el._fsHidden) return;
         var r = el.getBoundingClientRect();
         if (r.top < vh * .9 && r.bottom > 0) { el._fsHidden = false; gsap.to(el, { y: 0, opacity: 1, scale: 1, duration: .5, overwrite: true, clearProps: "transform,opacity" }); }
       });
-    }, 900);
-    document.querySelectorAll(".page-pad .lead-fs, .hero .lead-fs").forEach(function (p) {
+    }, 1500);
+    document.querySelectorAll(".page-pad .lead-fs").forEach(function (p) {
       gsap.from(p, { y: 16, opacity: 0, duration: .8, ease: "power2.out", delay: .2, clearProps: "all" });
     });
   }
 
+
+  /* ---------------- opening: door, then the page arrives slowly ----------------
+     Once per visit the site opens like a door: the name is drawn in gold,
+     the two halves slide apart, and the page comes in piece by piece. If the
+     registration dialog is waiting, the page arrives as soon as it closes. */
+  (function () {
+    var d = document.documentElement, entered = false, slow = d.classList.contains("door-on");
+    function inView(el) { var r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < window.innerHeight * .98 && r.height > 0; }
+    function splitWords(h) {
+      if (!h || h.dataset.split || h.querySelector("*:not(br):not(span)")) return null;
+      h.dataset.split = "1";
+      var label = h.textContent.trim().replace(/\s+/g, " ");
+      h.setAttribute("aria-label", label);
+      h.innerHTML = label.split(" ").map(function (w) { return "<span class='mw' aria-hidden='true'><span>" + w + "</span></span>"; }).join(" ");
+      return h.querySelectorAll(".mw > span");
+    }
+    function enter() {
+      if (entered) return; entered = true;
+      d.classList.remove("fs-wait");
+      if (!hasGsap || reduce) return;
+      var k = slow ? 1 : .6;
+      var tl = gsap.timeline();
+      var top = [].slice.call(document.querySelectorAll(".draft-ribbon, .site-header"));
+      if (top.length) tl.from(top, { y: -26, opacity: 0, duration: .9 * k, ease: "power3.out", stagger: .08, clearProps: "transform,opacity" }, 0);
+      var head = document.querySelector(".hero .hero-inner") || document.querySelector(".page-head .ph-inner");
+      if (head) {
+        var h1 = head.querySelector("h1"), words = splitWords(h1);
+        var kids = [].slice.call(head.querySelectorAll(":scope > *, :scope > .row > * > *, :scope > div > *")).filter(function (el) { return el !== h1 && !el.contains(h1) && el.offsetParent !== null; });
+        var crumbs = document.querySelector(".crumbs");
+        if (crumbs) tl.from(crumbs, { opacity: 0, y: 10, duration: .7 * k, ease: "power2.out", clearProps: "transform,opacity" }, .25 * k);
+        if (words && words.length) tl.from(words, { yPercent: 110, duration: 1.1 * k, ease: "power4.out", stagger: .075 * k, clearProps: "transform" }, .35 * k);
+        if (kids.length) tl.from(kids, { y: 26, opacity: 0, filter: "blur(6px)", duration: 1.15 * k, ease: "power3.out", stagger: .2 * k, clearProps: "transform,opacity,filter" }, .75 * k);
+      }
+      var art = document.querySelectorAll(".ph-art, .ph-orb, .hero-orbs, #hero3d, .hero-lines");
+      if (art.length) tl.from(art, { opacity: 0, scale: .94, duration: 1.6 * k, ease: "power2.out", clearProps: "transform,opacity" }, .5 * k);
+      var below = [].slice.call(document.querySelectorAll("main > *:not(.hero):not(.page-head):not(.crumbs), .page-pad > *, .page-body > *, main > section > .container > *"))
+        .filter(function (el) { return !el.closest(".hero") && !el.closest(".page-head") && inView(el) && !below_has(el); });
+      function below_has(el) { return false; }
+      below = below.filter(function (el, i) { return !below.some(function (o) { return o !== el && o.contains(el); }); }).slice(0, 8);
+      if (below.length) tl.from(below, { y: 34, opacity: 0, duration: 1.1 * k, ease: "power3.out", stagger: .16 * k, clearProps: "transform,opacity" }, 1.35 * k);
+    }
+    function afterDoor() {
+      if (d.classList.contains("reg-lock")) {
+        var done = function () { document.removeEventListener("fs:regclosed", done); slow = true; setTimeout(enter, 60); };
+        document.addEventListener("fs:regclosed", done);
+        d.classList.remove("fs-wait");
+      } else enter();
+    }
+    if (d.classList.contains("door-on") && document.getElementById("fsDoor")) {
+      var opened = false;
+      var open = function () {
+        if (opened) return; opened = true;
+        try { window.sessionStorage.setItem("fs_door", "1"); } catch (e) {}
+        d.classList.add("door-open");
+        setTimeout(function () { d.classList.remove("door-on"); }, 1350);
+        setTimeout(afterDoor, d.classList.contains("reg-lock") ? 0 : 420);
+      };
+      var wait = function () { setTimeout(open, Math.max(0, 2400 - (window.performance ? performance.now() : 0))); };
+      if (document.readyState === "complete") wait(); else window.addEventListener("load", wait);
+      setTimeout(open, 4200);
+      document.getElementById("fsDoor").addEventListener("click", open);
+    } else {
+      d.classList.remove("door-on");
+      afterDoor();
+    }
+  })();
+
   /* ---------------- hero text entrance ---------------- */
   var heroH1 = document.querySelector(".hero h1");
-  if (heroH1 && hasGsap && !reduce && !heroH1.dataset.split) {
+  if (false) {
     heroH1.dataset.split = "1";
     var words = heroH1.textContent.split(" ");
     heroH1.innerHTML = words.map(function (w) { return "<span class='w'><span>" + w + "</span></span>"; }).join(" ");
@@ -400,7 +468,7 @@
 
   /* ---------------- floaters + pointer parallax (no scroll) ---------------- */
   if (hasGsap && !reduce) {
-    document.querySelectorAll(".ph-art [data-float], .hero-orbs > *, .kb-orb").forEach(function (el, i) {
+    [].forEach.call([], function (el, i) {
       gsap.to(el, { y: "+=" + (8 + (i % 4) * 5), x: "+=" + ((i % 3) - 1) * 6, rotation: (i % 2 ? 1 : -1) * 1.5, duration: 3.2 + (i % 5), yoyo: true, repeat: -1, ease: "sine.inOut", delay: i * 0.15 });
     });
     var art = document.querySelector(".ph-art");
@@ -409,7 +477,7 @@
       gsap.to(art, { x: dx * -18, y: dy * -12, duration: 0.8, ease: "power2.out", overwrite: "auto" });
     }, { passive: true });
     var giant = document.querySelector(".foot-giant span");
-    if (giant) gsap.fromTo(giant, { xPercent: -3 }, { xPercent: 3, duration: 9, yoyo: true, repeat: -1, ease: "sine.inOut" });
+    if (false) gsap.fromTo(giant, { xPercent: -3 }, { xPercent: 3, duration: 9, yoyo: true, repeat: -1, ease: "sine.inOut" });
     document.querySelectorAll(".marquee-track").forEach(function (m) { m.addEventListener("pointerenter", function () { m.style.animationPlayState = "paused"; }); m.addEventListener("pointerleave", function () { m.style.animationPlayState = ""; }); });
   }
 
@@ -427,7 +495,7 @@
     rootEl.classList.add("fx5");
 
     /* 1. headings rise out of a mask, word by word */
-    document.querySelectorAll(".ph-inner h1, .page-body > h2, .page-pad > h2, .page-pad .reveal > h2, .page-pad .row h2, .hgal-head h2").forEach(function (h) {
+    document.querySelectorAll(".page-body > h2, .page-pad > h2, .page-pad .reveal > h2, .page-pad .row h2, .hgal-head h2").forEach(function (h) {
       if (h.children.length || h.dataset.split) return;
       h.dataset.split = "1";
       h.innerHTML = h.textContent.trim().split(/\s+/).map(function (w) { return "<span class='mw'><span>" + w + "</span></span>"; }).join(" ");
@@ -502,7 +570,7 @@
       });
 
       /* 8. a soft glow follows the pointer behind the page */
-      var glow = document.createElement("div"); glow.className = "fx-glow"; glow.setAttribute("aria-hidden", "true");
+      var glow = document.createElement("div"); glow.className = "fx-glow fx-off"; glow.setAttribute("aria-hidden", "true");
       document.body.appendChild(glow);
       var gx = innerWidth / 2, gy = innerHeight / 3, tx = gx, ty = gy, gRun = false;
       var gLoop = function () {
@@ -510,7 +578,7 @@
         glow.style.transform = "translate3d(" + (gx - 300).toFixed(1) + "px," + (gy - 300).toFixed(1) + "px,0)";
         if (Math.abs(tx - gx) + Math.abs(ty - gy) > .5) requestAnimationFrame(gLoop); else gRun = false;
       };
-      window.addEventListener("pointermove", function (e) { tx = e.clientX; ty = e.clientY; if (!gRun) { gRun = true; requestAnimationFrame(gLoop); } }, { passive: true });
+      if (false) window.addEventListener("pointermove", function (e) { tx = e.clientX; ty = e.clientY; if (!gRun) { gRun = true; requestAnimationFrame(gLoop); } }, { passive: true });
     }
   }
 
@@ -577,7 +645,7 @@
     if (!href || href.charAt(0) === "#" || /^(https?:|mailto:|tel:)/.test(href) || !/\.html(#.*)?$/.test(href)) return;
     e.preventDefault();
     if (curtain && hasGsap && !reduce) {
-      gsap.to(curtain, { scaleY: 1, transformOrigin: "bottom", duration: .42, ease: "power4.inOut", onComplete: function () { window.location.href = href; } });
+      gsap.to(curtain, { scaleY: 1, transformOrigin: "bottom", duration: .3, ease: "power3.inOut", onComplete: function () { window.location.href = href; } });
     } else {
       document.body.classList.add("leaving");
       setTimeout(function () { window.location.href = href; }, 200);
