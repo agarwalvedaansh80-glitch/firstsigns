@@ -916,13 +916,9 @@ html.fs-wait .draft-ribbon,html.fs-wait .site-header,html.fs-wait main,html.fs-w
 [data-reg-form].consent-ok .form-check{border-color:var(--fs-teal-line);background:#EEF7F9}
 [data-reg-form] .form-check-input{margin-top:.2rem}
 
-/* calmer motion: nothing loops that makes the page work hard */
-.hero::before{animation:none}
-.page-pad h2::after,.hgal-head h2::after{animation:none}
-.hgal-n,.story-num small{animation:none}
-.fx-glow{display:none!important}
-.foot-giant{display:none}
-.fx-lens{-webkit-backdrop-filter:none;backdrop-filter:none}
+/* the heading underline breathes with transform (no layout work) */
+.page-pad h2::after,.hgal-head h2::after{width:38px;transform-origin:left;animation:fsBar2 5s ease-in-out infinite}
+@keyframes fsBar2{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.63)}}
 
 /* layout: everything lines up with the content column */
 .container.ph-inner{max-width:1100px}
@@ -946,3 +942,81 @@ html.fs-wait .draft-ribbon,html.fs-wait .site-header,html.fs-wait main,html.fs-w
 .hgal{padding-top:2.4rem!important;padding-bottom:2.4rem!important}
 .connect{margin-bottom:0}
 .site-footer{margin-top:2.4rem}
+
+/* ===== v7: immersive layer ===== */
+/* opening: the name is written, then filled in gold */
+@keyframes fsdFill{0%{fill:rgba(232,184,75,0)}100%{fill:#E8B84B}}
+.fs-door text{animation:fsdDraw 1.6s cubic-bezier(.6,.1,.2,1) .15s forwards,fsdFill .9s 1.45s ease forwards,fsdGlow 2.4s 1.6s ease-in-out infinite alternate}
+@keyframes fsdGlow{from{filter:drop-shadow(0 0 0 rgba(232,184,75,0))}to{filter:drop-shadow(0 0 18px rgba(232,184,75,.45))}}
+.fs-door .dm::before{content:"";position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 12% 22%,rgba(232,184,75,.7),transparent 60%),radial-gradient(1.2px 1.2px at 82% 30%,rgba(127,182,198,.7),transparent 60%),radial-gradient(1.6px 1.6px at 30% 78%,rgba(232,184,75,.6),transparent 60%),radial-gradient(1.2px 1.2px at 68% 70%,rgba(127,182,198,.6),transparent 60%),radial-gradient(1.4px 1.4px at 50% 12%,rgba(232,184,75,.5),transparent 60%),radial-gradient(1.2px 1.2px at 92% 86%,rgba(232,184,75,.5),transparent 60%);animation:fsdStars 6s linear infinite;pointer-events:none}
+@keyframes fsdStars{from{transform:translateY(0)}to{transform:translateY(-40px)}}
+.fs-door .dm > *{position:relative}
+
+/* footer wordmark sits below the text, as an outline that drifts */
+.site-footer{padding-bottom:clamp(4.5rem,11vw,9.5rem)}
+.foot-giant{display:block;top:auto;bottom:-.08em;font-size:clamp(3.4rem,13vw,11rem);line-height:1;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.14);letter-spacing:-.04em}
+
+/* lens label */
+.fx-lens .fx-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 10px/1 "Public Sans",system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#0F2E52;opacity:0;transition:opacity .2s}
+.fx-lens.label .fx-label{opacity:1}
+.fx-lens.dark .fx-label{color:#fff}
+.fx-lens.label{background:radial-gradient(120% 120% at 32% 26%,rgba(255,255,255,.75) 0%,rgba(232,240,245,.55) 60%,rgba(255,255,255,.7) 100%)}
+
+/* click ripple */
+.fx-ripple{position:fixed;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;pointer-events:none;z-index:8999;border:2px solid rgba(14,116,144,.55);animation:fxRip .85s cubic-bezier(.2,.7,.2,1) forwards}
+.fx-ripple.gold{border-color:rgba(232,184,75,.8)}
+@keyframes fxRip{from{transform:scale(.4);opacity:1}to{transform:scale(6.5);opacity:0}}
+
+/* hero words respond to the pointer */
+.hero h1 .mw,.page-head h1 .mw{transition:translate .35s cubic-bezier(.2,.7,.2,1),color .35s}
+
+/* header tightens once you scroll */
+.site-header{transition:box-shadow .3s,background-color .3s}
+.site-header.fx-compact{box-shadow:0 6px 18px rgba(15,46,82,.08);background-color:#fff}
+.site-header .navbar{transition:padding .3s}
+.site-header.fx-compact .navbar{padding-top:.25rem;padding-bottom:.25rem}
+
+/* gliding nav line */
+.site-header .navbar-nav{position:relative}
+.fx-navline{position:absolute;left:0;bottom:-2px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--fs-teal),var(--fs-gold));opacity:0;pointer-events:none;transition:transform .45s cubic-bezier(.2,.7,.2,1),width .45s cubic-bezier(.2,.7,.2,1),opacity .3s}
+@media(max-width:991px){.fx-navline{display:none}}
+
+/* back to top with a reading ring */
+.fx-top{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:1500;width:50px;height:50px;border-radius:50%;border:1px solid rgba(255,255,255,.6);padding:0;background:radial-gradient(120% 120% at 30% 25%,#fff 0%,#F2F7FA 60%,#E6F0F4 100%);box-shadow:inset 0 1px 1px rgba(255,255,255,.8),0 10px 26px rgba(15,46,82,.18);opacity:0;transform:translateY(20px) scale(.9);pointer-events:none;transition:opacity .35s,transform .45s cubic-bezier(.2,.7,.2,1)}
+.fx-top.on{opacity:1;transform:none;pointer-events:auto}
+.fx-top:hover{transform:translateY(-3px)}
+.fx-top svg{width:100%;height:100%;transform:rotate(-90deg)}
+.fx-top circle{fill:none;stroke-width:2.5}
+.fx-top .trk{stroke:rgba(14,116,144,.15)}
+.fx-top .bar{stroke:var(--fs-teal);stroke-linecap:round}
+.fx-top path{fill:none;stroke:var(--fs-navy);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;transform:rotate(90deg);transform-origin:24px 24px}
+html.reg-lock .fx-top{display:none}
+
+/* curtain wipes for bands */
+.fx-wipe{clip-path:inset(0 0 0 0 round 16px)}
+html.fx5 .fx-wipe:not(.fx-wiped){clip-path:inset(0 100% 0 0 round 16px)}
+.fx-wipe{transition:clip-path 1.1s cubic-bezier(.77,0,.18,1)}
+
+/* glow that follows the pointer inside dark bands and stats */
+.fx-gl{position:relative;overflow:hidden}
+.fx-glin{position:absolute;inset:0;pointer-events:none;border-radius:inherit;mix-blend-mode:screen;background:radial-gradient(280px circle at var(--gx,-300px) var(--gy,-300px),rgba(232,184,75,.22),transparent 60%);opacity:0;transition:opacity .35s}
+.fx-gl:hover .fx-glin{opacity:1}
+.glance-item .fx-glin,.stat .fx-glin{mix-blend-mode:multiply;background:radial-gradient(200px circle at var(--gx,-300px) var(--gy,-300px),rgba(14,116,144,.14),transparent 60%)}
+
+/* reading line on long pages */
+.fx-read{position:fixed;left:14px;top:22vh;height:56vh;width:3px;border-radius:3px;background:rgba(14,116,144,.12);z-index:900;opacity:0;transition:opacity .4s;pointer-events:none}
+.fx-read.on{opacity:1}
+.fx-read i{display:block;width:100%;height:100%;border-radius:3px;background:linear-gradient(180deg,var(--fs-teal),var(--fs-gold));transform-origin:top;transform:scaleY(0)}
+@media(max-width:1199px){.fx-read{display:none}}
+
+/* page-change curtain shows the mark */
+.curtain{display:flex;align-items:center;justify-content:center}
+.fx-cmark{display:inline-flex;align-items:center;gap:12px;font:700 1.4rem/1 "Libre Franklin",system-ui,sans-serif;color:#fff;letter-spacing:-.01em;opacity:.95}
+.fx-cmark svg{width:38px;height:38px}
+
+/* links in the text draw their underline */
+.page-body a:not(.btn),.page-pad > p a:not(.btn){text-decoration:none;background-image:linear-gradient(currentColor,currentColor);background-size:0% 1.5px;background-position:0 100%;background-repeat:no-repeat;box-shadow:inset 0 -1px 0 rgba(14,116,144,.3);transition:background-size .35s cubic-bezier(.2,.7,.2,1),color .2s}
+.page-body a:not(.btn):hover,.page-pad > p a:not(.btn):hover{background-size:100% 1.5px}
+
+@media (prefers-reduced-motion:reduce){.fx-ripple,.fx-read,.fx-top{display:none}.fx-wipe{clip-path:none!important}}
+@media print{.fx-top,.fx-read,.fx-ripple{display:none!important}}
