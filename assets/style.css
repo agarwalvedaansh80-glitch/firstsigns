@@ -1020,3 +1020,57 @@ html.fx5 .fx-wipe:not(.fx-wiped){clip-path:inset(0 100% 0 0 round 16px)}
 
 @media (prefers-reduced-motion:reduce){.fx-ripple,.fx-read,.fx-top{display:none}.fx-wipe{clip-path:none!important}}
 @media print{.fx-top,.fx-read,.fx-ripple{display:none!important}}
+
+/* ===== v8 ===== */
+/* opening: First Signs written in a script hand, in gold */
+.fs-door .dw{width:min(94vw,920px)}
+.fs-door text.wt{font-family:"Great Vibes","Brush Script MT","Segoe Script",cursive;font-weight:400;font-size:178px;letter-spacing:0;stroke:rgba(255,231,168,.55);stroke-width:.8;stroke-dasharray:none;stroke-dashoffset:0;paint-order:stroke;animation:none}
+.fs-door.written text.wt{animation:fsdGlow 2.6s .1s ease-in-out infinite alternate}
+.fs-door i:first-child text.wt{fill:url(#fsg1)}
+.fs-door i:last-child text.wt{fill:url(#fsg2)}
+@media(max-width:767px){#hero3d{opacity:.38}}
+.fs-door .nib{fill:#FFF1C9;opacity:0;filter:drop-shadow(0 0 6px #E8B84B) drop-shadow(0 0 16px rgba(232,184,75,.9));transition:opacity .4s}
+.fs-door.writing .nib{opacity:1}
+.fs-door.written .nib{opacity:0}
+.fs-door .db b{animation:none;transform:scaleX(0);transition:transform 2.4s cubic-bezier(.6,.1,.2,1)}
+.fs-door.writing .db b{transform:scaleX(1)}
+.fs-door .ds{animation:none;opacity:0;transform:translateY(10px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+.fs-door.written .ds{opacity:1;transform:none}
+.fs-door .dlogo{animation:fsdUp .9s .1s cubic-bezier(.2,.7,.2,1) forwards}
+@media (max-width:600px){.fs-door .dw{width:96vw}}
+/* the welcome dialog fades in as the doors part */
+html.door-open .regpanel.open,html.door-open .reg-backdrop.open{animation:fsdFade 1s .45s ease both}
+@keyframes fsdFade{from{opacity:0;filter:blur(6px)}to{opacity:1;filter:none}}
+
+/* counters stay on one line */
+.glance-item b .cnt,.stat b .cnt{display:inline!important;font:inherit!important;color:inherit!important;margin:0!important;padding:0!important;letter-spacing:inherit!important;background:none!important}
+
+/* back to top: smaller on phones */
+@media(max-width:767px){.fx-top{width:42px;height:42px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
+
+/* cursor v8: the glass lens is the cursor */
+html.fx-cursor2.fx-on,html.fx-cursor2.fx-on body,html.fx-cursor2.fx-on a,html.fx-cursor2.fx-on button,html.fx-cursor2.fx-on label,html.fx-cursor2.fx-on summary,html.fx-cursor2.fx-on .btn,html.fx-cursor2.fx-on [role=button],html.fx-cursor2.fx-on [data-term],html.fx-cursor2.fx-on .fs-door{cursor:none}
+html.fx-cursor2 input,html.fx-cursor2 textarea,html.fx-cursor2 select,html.fx-cursor2 [contenteditable]{cursor:auto!important}
+.fx-cur{position:fixed;left:0;top:0;width:38px;height:38px;border-radius:999px;pointer-events:none;z-index:31000;opacity:0;transform-origin:50% 50%;will-change:transform;transition:opacity .25s,background-color .3s,border-color .3s,box-shadow .3s;
+background:rgba(255,255,255,.07);
+-webkit-backdrop-filter:blur(2.5px) saturate(190%) brightness(1.12) contrast(1.06);backdrop-filter:blur(2.5px) saturate(190%) brightness(1.12) contrast(1.06);
+border:1px solid rgba(255,255,255,.6);
+box-shadow:inset 0 1.5px 1px rgba(255,255,255,.8),inset 0 -7px 12px rgba(14,116,144,.18),inset 4px 0 9px rgba(127,182,198,.22),inset -3px 0 8px rgba(232,184,75,.12),0 6px 18px rgba(15,46,82,.18),0 0 0 .6px rgba(15,46,82,.28)}
+.fx-cur-glass{position:absolute;inset:0;border-radius:inherit;background:radial-gradient(60% 46% at 68% 86%,rgba(255,255,255,.28),transparent 70%)}
+.fx-cur-shine{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;pointer-events:none}
+.fx-cur-shine::before{content:"";position:absolute;left:17%;right:36%;top:8%;height:36%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,0));opacity:.85}
+.fx-cur-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 11px/1 "Public Sans",system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#0F2E52;opacity:0;transition:opacity .2s}
+.fx-cur.hot{background:rgba(232,184,75,.14);border-color:rgba(246,215,154,.9);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.85),inset 0 -8px 14px rgba(232,184,75,.22),0 8px 22px rgba(15,46,82,.2),0 0 0 .6px rgba(232,184,75,.6)}
+.fx-cur.lab{background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.95)}
+.fx-cur.lab .fx-cur-label{opacity:1}
+.fx-cur.dark{border-color:rgba(255,255,255,.42);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.5),inset 0 -7px 12px rgba(232,184,75,.2),0 8px 22px rgba(0,0,0,.35),0 0 0 .6px rgba(232,184,75,.55)}
+.fx-cur.dark.lab{background:rgba(255,255,255,.16)}
+.fx-cur.dark .fx-cur-label{color:#fff}
+.fx-cur.press{box-shadow:inset 0 3px 10px rgba(255,255,255,.7),inset 0 -10px 18px rgba(14,116,144,.3),0 4px 12px rgba(15,46,82,.24)}
+.fx-dot{position:fixed;left:0;top:0;width:6px;height:6px;border-radius:50%;background:#0F2E52;pointer-events:none;z-index:31001;opacity:0;transition:opacity .2s,background-color .2s;box-shadow:0 0 0 1.5px rgba(255,255,255,.7)}
+.fx-dot.light{background:#fff;box-shadow:0 0 0 1.5px rgba(15,46,82,.5)}
+html.fx-on .fx-cur,html.fx-on .fx-dot{opacity:1}
+.fx-dot.off{opacity:0!important}
+html.fx-field .fx-cur,html.fx-field .fx-dot{opacity:0!important}
+@media (pointer:coarse),(prefers-reduced-motion:reduce){.fx-cur,.fx-dot{display:none}}
+@media print{.fx-cur,.fx-dot{display:none!important}}

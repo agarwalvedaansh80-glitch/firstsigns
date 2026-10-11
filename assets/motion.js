@@ -364,10 +364,7 @@
             gsap.fromTo(el, { y: kb ? 34 : 26, opacity: .25, scale: kb ? .965 : .985 },
               { y: 0, opacity: 1, scale: 1, duration: kb ? .9 : .7, delay: (el._fsIdx % 4) * .05, ease: "power3.out", overwrite: true, clearProps: "transform,opacity" });
           }
-        } else if (x.boundingClientRect.top > 0) {
-          /* went back below the fold: arm it to play again */
-          el._fsHidden = true;
-          gsap.set(el, { y: 26, opacity: .25 });
+          ioR.unobserve(el);
         }
       });
     }, { rootMargin: "0px 0px -6% 0px", threshold: 0 });
@@ -410,7 +407,7 @@
       if (entered) return; entered = true;
       d.classList.remove("fs-wait");
       if (!hasGsap || reduce) return;
-      var k = slow ? 1 : .6;
+      var k = slow ? 1.35 : .6;
       var tl = gsap.timeline();
       var top = [].slice.call(document.querySelectorAll(".draft-ribbon, .site-header"));
       if (top.length) tl.from(top, { y: -26, opacity: 0, duration: .9 * k, ease: "power3.out", stagger: .08, clearProps: "transform,opacity" }, 0);
@@ -431,6 +428,32 @@
       below = below.filter(function (el, i) { return !below.some(function (o) { return o !== el && o.contains(el); }); }).slice(0, 8);
       if (below.length) tl.from(below, { y: 34, opacity: 0, duration: 1.1 * k, ease: "power3.out", stagger: .16 * k, clearProps: "transform,opacity" }, 1.35 * k);
     }
+    function startWriting(done) {
+      var door = document.getElementById("fsDoor"); if (!door) { done(); return; }
+      var rects = door.querySelectorAll(".wr"), nibs = door.querySelectorAll(".nib"), txt = door.querySelector(".wt");
+      var ran = false;
+      var go = function () {
+        if (ran) return; ran = true;
+        var x0 = 80, x1 = 920, top = 40, bot = 220;
+        try { var bb = txt.getBBox(); if (bb.width > 50) { x0 = bb.x; x1 = bb.x + bb.width; top = bb.y; bot = bb.y + bb.height; } } catch (e) {}
+        door.classList.add("writing");
+        var t0 = performance.now(), D = 2400, mid = top + (bot - top) * .55, amp = (bot - top) * .22;
+        var step = function (t) {
+          var q = Math.min(1, (t - t0) / D), e = q < .5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2;
+          var x = x0 + e * (x1 - x0);
+          rects.forEach(function (r) { r.setAttribute("width", Math.max(0, x + 6)); });
+          nibs.forEach(function (nb) { nb.setAttribute("cx", x.toFixed(1)); nb.setAttribute("cy", (mid + Math.sin(q * 30) * amp).toFixed(1)); });
+          if (q < 1) requestAnimationFrame(step);
+          else { rects.forEach(function (r) { r.setAttribute("width", 1000); }); door.classList.add("written"); setTimeout(done, 650); }
+        };
+        requestAnimationFrame(step);
+      };
+      try {
+        if (document.fonts && document.fonts.load) document.fonts.load('160px "Great Vibes"').then(function () { setTimeout(go, 120); }, go);
+        else go();
+      } catch (e) { go(); }
+      setTimeout(go, 1500);
+    }
     function afterDoor() {
       if (d.classList.contains("reg-lock")) {
         var done = function () { document.removeEventListener("fs:regclosed", done); slow = true; setTimeout(enter, 60); };
@@ -445,11 +468,10 @@
         try { window.sessionStorage.setItem("fs_door", "1"); } catch (e) {}
         d.classList.add("door-open");
         setTimeout(function () { d.classList.remove("door-on"); }, 1350);
-        setTimeout(afterDoor, d.classList.contains("reg-lock") ? 0 : 420);
+        setTimeout(afterDoor, d.classList.contains("reg-lock") ? 250 : 950);
       };
-      var wait = function () { setTimeout(open, Math.max(0, 3100 - (window.performance ? performance.now() : 0))); };
-      if (document.readyState === "complete") wait(); else window.addEventListener("load", wait);
-      setTimeout(open, 5000);
+      startWriting(function () { setTimeout(open, 750); });
+      setTimeout(open, 7500);
       document.getElementById("fsDoor").addEventListener("click", open);
     } else {
       d.classList.remove("door-on");
@@ -528,7 +550,7 @@
       var fmt = function (x) { return dec ? x.toFixed(dec) : (comma ? Math.round(x).toLocaleString("en-IN") : String(Math.round(x))); };
       b.innerHTML = "";
       b.appendChild(document.createTextNode(txt.slice(0, best.i)));
-      var span = document.createElement("span"); span.textContent = fmt(0); b.appendChild(span);
+      var span = document.createElement("span"); span.className = "cnt"; span.textContent = fmt(0); b.appendChild(span);
       b.appendChild(document.createTextNode(txt.slice(best.i + best.s.length)));
       onVisible(b, function () { var o = { v: 0 }; gsap.to(o, { v: best.v, duration: 1.6, ease: "power3.out", onUpdate: function () { span.textContent = fmt(o.v); }, onComplete: function () { span.textContent = best.s; } }); }, "0px 0px -5% 0px");
     });
@@ -583,63 +605,64 @@
     }
   }
 
-  /* ---------------- cursor: liquid glass lens ----------------
-     The normal mouse arrow always stays visible. A small drop of liquid
-     glass rides on it: it refracts what is underneath, stretches along the
-     direction of travel like a drop of water, swells over links and buttons,
-     squeezes when pressed and settles back into a round lens when still.
-     It hides in form fields and when the pointer leaves the page. */
+  /* ---------------- cursor: liquid glass lens (v8) ----------------
+     The lens is the cursor: a drop of glass that refracts what is under it,
+     stretches with speed, settles round when still, swells and is pulled
+     towards links and buttons, becomes a labelled pill over cards, squeezes
+     when pressed. A small point marks the exact click position. */
   if (fine && !reduce) {
     try {
-      var B = 64;
-      var lens = document.createElement("div");
-      lens.className = "fx-lens"; lens.setAttribute("aria-hidden", "true");
-      var glint = document.createElement("span"); glint.className = "fx-glint";
-      lens.appendChild(glint);
-      var lensLabel = document.createElement("b"); lensLabel.className = "fx-label"; lens.appendChild(lensLabel);
-      document.body.appendChild(lens);
-      document.documentElement.classList.add("fx-cursor");
-      var px = -200, py = -200, tx = -200, ty = -200;
-      var s = 34, ts = 34, k = 1, ang = 0, running = false, pressed = false;
-      var loop = function () {
-        var dx = tx - px, dy = ty - py;
-        px += dx * 0.38; py += dy * 0.38;
-        var dist = Math.min(Math.sqrt(dx * dx + dy * dy), 140);
-        if (dist > 0.6) ang = Math.atan2(dy, dx);
-        var kt = 1 + dist / 230;
-        k += (kt - k) * 0.22;
-        var target = ts * (pressed ? 0.8 : 1);
-        s += (target - s) * 0.2;
-        var sc = s / B;
-        lens.style.transform = "translate3d(" + (px - B / 2).toFixed(2) + "px," + (py - B / 2).toFixed(2) + "px,0) rotate(" + ang.toFixed(3) + "rad) scale(" + (sc * k).toFixed(3) + "," + (sc / Math.sqrt(k)).toFixed(3) + ")";
-        glint.style.transform = "rotate(" + (-ang).toFixed(3) + "rad)";
-        lensLabel.style.transform = "rotate(" + (-ang).toFixed(3) + "rad) scale(" + (1 / Math.max(sc * k, .2)).toFixed(3) + "," + (1 / Math.max(sc / Math.sqrt(k), .2)).toFixed(3) + ")";
-        if (Math.abs(dx) + Math.abs(dy) + Math.abs(target - s) + Math.abs(k - 1) > 0.04) requestAnimationFrame(loop);
-        else running = false;
+      var rootC = document.documentElement;
+      var lens = document.createElement("div"); lens.className = "fx-cur"; lens.setAttribute("aria-hidden", "true");
+      lens.innerHTML = '<span class="fx-cur-glass"></span><span class="fx-cur-shine"></span><b class="fx-cur-label"></b>';
+      var dot = document.createElement("div"); dot.className = "fx-dot"; dot.setAttribute("aria-hidden", "true");
+      document.body.appendChild(lens); document.body.appendChild(dot);
+      rootC.classList.add("fx-cursor2");
+      var shine = lens.querySelector(".fx-cur-shine"), clab = lens.querySelector(".fx-cur-label");
+      var mx = -300, my = -300, cx = -300, cy = -300, cw = 38, chh = 38, tw = 38, th = 38, st = 1, ang = 0, crun = false, cpress = false, mag = null;
+      var cloop = function () {
+        var gx = mx, gy = my;
+        if (mag) { var mr = mag.getBoundingClientRect(); gx = mx + ((mr.left + mr.width / 2) - mx) * .3; gy = my + ((mr.top + mr.height / 2) - my) * .3; }
+        var dx = gx - cx, dy = gy - cy; cx += dx * .24; cy += dy * .24;
+        var sp = Math.min(Math.sqrt(dx * dx + dy * dy), 140);
+        if (sp > .6) ang = Math.atan2(dy, dx);
+        st += ((1 + sp / 240) - st) * .22;
+        var kk = cpress ? .84 : 1;
+        cw += (tw * kk - cw) * .22; chh += (th * kk - chh) * .22;
+        var pill = tw > th + 8;
+        var sx = pill ? 1 : st, sy = pill ? 1 : 1 / Math.sqrt(st), ra = pill ? 0 : ang;
+        lens.style.width = cw.toFixed(1) + "px"; lens.style.height = chh.toFixed(1) + "px";
+        lens.style.transform = "translate3d(" + (cx - cw / 2).toFixed(1) + "px," + (cy - chh / 2).toFixed(1) + "px,0) rotate(" + ra.toFixed(3) + "rad) scale(" + sx.toFixed(3) + "," + sy.toFixed(3) + ")";
+        shine.style.transform = "rotate(" + (-ra).toFixed(3) + "rad)";
+        if (Math.abs(dx) + Math.abs(dy) + Math.abs(tw - cw) + Math.abs(th - chh) + Math.abs(st - 1) > .06) requestAnimationFrame(cloop);
+        else crun = false;
       };
-      var kick = function () { if (!running) { running = true; requestAnimationFrame(loop); } };
+      var ckick = function () { if (!crun) { crun = true; requestAnimationFrame(cloop); } };
       window.addEventListener("pointermove", function (e) {
-        if (e.pointerType !== "mouse") return;
-        tx = e.clientX; ty = e.clientY;
-        if (px < -100) { px = tx; py = ty; }
-        document.documentElement.classList.add("fx-on");
-        var t = e.target, c = function (sel) { return t.closest ? t.closest(sel) : null; };
+        if (e.pointerType && e.pointerType !== "mouse") return;
+        mx = e.clientX; my = e.clientY;
+        if (cx < -200) { cx = mx; cy = my; }
+        dot.style.transform = "translate3d(" + (mx - 3) + "px," + (my - 3) + "px,0)";
+        rootC.classList.add("fx-on");
+        var t = e.target, c = function (sel) { return t && t.closest ? t.closest(sel) : null; };
         var field = c("input,textarea,select,[contenteditable],.chat-log");
-        document.documentElement.classList.toggle("fx-field", !!field);
-        var hot = !field && c("a,button,.btn,[role=button],[data-term],label,summary,.story-label,.story-btn,.rail-arrow,.rail-dot,.hgal-card,.tile,.accordion-button,.nav-link");
-        var dark = !!c(".keyband,.fearon-band,.connect,.site-footer,.live-feed,.reg-side,.draft-ribbon");
-        var lab = !field && c("[data-cursor],.hgal-card,.tile,.doc-card,.pager-link,.story-step a,.type-card");
+        rootC.classList.toggle("fx-field", !!field);
+        var lab = !field && c("[data-cursor],.hgal-card,.tile,.doc-card,.pager-link,.type-card");
+        var hot = !field && !lab && c("a,button,.btn,[role=button],[data-term],label,summary,.story-label,.story-btn,.rail-arrow,.rail-dot,.accordion-button,.nav-link,.dropdown-item");
+        var dark = !!c(".keyband,.fearon-band,.connect,.site-footer,.live-feed,.reg-side,.draft-ribbon,.fs-door,.curtain");
         var word = lab ? (lab.getAttribute("data-cursor") || (lab.classList.contains("pager-link") ? "Next" : "Open")) : "";
-        if (lensLabel.textContent !== word) lensLabel.textContent = word;
-        ts = lab ? 84 : (hot ? 62 : 34);
-        lens.className = "fx-lens" + (hot ? " big" : "") + (lab ? " label" : "") + (dark ? " dark" : "") + (pressed ? " press" : "");
-        kick();
+        if (clab.textContent !== word) clab.textContent = word;
+        if (lab) { tw = 104; th = 46; } else if (hot) { tw = th = 60; } else { tw = th = 38; }
+        mag = hot && hot.getBoundingClientRect().width < 280 ? hot : null;
+        lens.className = "fx-cur" + (hot ? " hot" : "") + (lab ? " lab" : "") + (dark ? " dark" : "") + (cpress ? " press" : "");
+        dot.className = "fx-dot" + (lab ? " off" : "") + (dark ? " light" : "");
+        ckick();
       }, { passive: true });
-      document.addEventListener("pointerdown", function () { pressed = true; lens.classList.add("press"); kick(); });
-      document.addEventListener("pointerup", function () { pressed = false; lens.classList.remove("press"); kick(); });
-      document.documentElement.addEventListener("mouseleave", function () { document.documentElement.classList.remove("fx-on"); });
-      window.addEventListener("blur", function () { document.documentElement.classList.remove("fx-on"); });
-    } catch (e) { document.documentElement.classList.remove("fx-cursor"); }
+      document.addEventListener("pointerdown", function () { cpress = true; lens.classList.add("press"); ckick(); });
+      document.addEventListener("pointerup", function () { cpress = false; lens.classList.remove("press"); ckick(); });
+      rootC.addEventListener("mouseleave", function () { rootC.classList.remove("fx-on"); });
+      window.addEventListener("blur", function () { rootC.classList.remove("fx-on"); });
+    } catch (e) { document.documentElement.classList.remove("fx-cursor2"); }
   }
 
 
@@ -681,7 +704,7 @@
     /* 3. one scroll loop: parallax depth, marquee speed, header shrink, back-to-top ring */
     var marq = [].slice.call(document.querySelectorAll(".marquee-track"));
     var par = [].slice.call(document.querySelectorAll(".ph-art, .ph-orb, .hero .orb, .hero-lines, .hero-orbs, .kb-orb"));
-    var headInner = document.querySelector(".ph-inner, .hero-inner");
+    var headInner = null;
     var header = document.querySelector(".site-header");
     var topBtn = document.createElement("button");
     topBtn.type = "button"; topBtn.className = "fx-top"; topBtn.setAttribute("aria-label", "Back to top");
@@ -719,10 +742,24 @@
     tick();
 
     /* 4. bands open like a curtain the first time they come into view */
-    document.querySelectorAll(".keyband, .fearon-band, .connect, .callout, .review-block, .stat-band").forEach(function (b) {
-      b.classList.add("fx-wipe");
-      onVisible(b, function () { b.classList.add("fx-wiped"); setTimeout(function () { b.classList.remove("fx-wipe", "fx-wiped"); }, 1300); }, "0px 0px -10% 0px");
-    });
+    var wipes = [].slice.call(document.querySelectorAll(".keyband, .fearon-band, .connect, .callout, .review-block, .stat-band"));
+    wipes.forEach(function (b) { b.classList.add("fx-wipe"); });
+    var checkWipes = function () {
+      if (!wipes.length) return;
+      var vh = window.innerHeight;
+      wipes = wipes.filter(function (b) {
+        var r = b.getBoundingClientRect();
+        if (r.top < vh * .92 && r.bottom > 0) {
+          b.classList.add("fx-wiped");
+          setTimeout(function () { b.classList.remove("fx-wipe", "fx-wiped"); }, 1300);
+          return false;
+        }
+        return true;
+      });
+    };
+    window.addEventListener("scroll", function () { requestAnimationFrame(checkWipes); }, { passive: true });
+    setTimeout(checkWipes, 200);
+    var wipeTimer = setInterval(function () { checkWipes(); if (!wipes.length) clearInterval(wipeTimer); }, 800);
 
     /* 5. navigation: a gold line glides to whichever item the pointer is on */
     var navUl = document.querySelector(".site-header .navbar-nav");
@@ -773,6 +810,27 @@
     if (cur && !cur.querySelector(".fx-cmark")) {
       cur.innerHTML = '<span class="fx-cmark"><svg viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="10" fill="#0F2E52" stroke="#3E6E8E"/><path d="M9 29.5 Q 22 21.5 35 29.5" fill="none" stroke="#7FB6C6" stroke-width="2.2" stroke-linecap="round"/><path d="M9 34 Q 22 27.5 35 34" fill="none" stroke="#3E6E8E" stroke-width="1.6" stroke-linecap="round" opacity="0.8"/><circle cx="22" cy="16.5" r="4.6" fill="#E8B84B"/></svg>First Signs</span>';
     }
+  })();
+
+
+  /* ================= v8: decoding labels ================= */
+  (function () {
+    if (reduce || !hasIO) return;
+    var CH = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    document.querySelectorAll(".eyebrow, .kb-eyebrow, .review-label, .pager-eyebrow, .rail-label").forEach(function (el) {
+      if (el.children.length) return;
+      var fin = el.textContent; if (!fin.trim() || fin.length > 70) return;
+      onVisible(el, function () {
+        var t0 = performance.now(), D = 650 + fin.length * 12;
+        el.style.minWidth = el.offsetWidth + "px";
+        var f = function (t) {
+          var q = Math.min(1, (t - t0) / D), n = Math.floor(q * fin.length);
+          el.textContent = fin.slice(0, n) + fin.slice(n).replace(/[A-Za-z]/g, function () { return CH[(Math.random() * 26) | 0]; });
+          if (q < 1) requestAnimationFrame(f); else { el.textContent = fin; el.style.minWidth = ""; }
+        };
+        requestAnimationFrame(f);
+      }, "0px 0px -6% 0px");
+    });
   })();
 
   /* ---------------- page transitions ---------------- */
