@@ -449,7 +449,7 @@
         requestAnimationFrame(step);
       };
       try {
-        if (document.fonts && document.fonts.load) document.fonts.load('160px "Great Vibes"').then(function () { setTimeout(go, 120); }, go);
+        if (document.fonts && document.fonts.load) document.fonts.load('700 128px "Playfair Display"').then(function () { setTimeout(go, 120); }, go);
         else go();
       } catch (e) { go(); }
       setTimeout(go, 1500);

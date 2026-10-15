@@ -1024,7 +1024,7 @@ html.fx5 .fx-wipe:not(.fx-wiped){clip-path:inset(0 100% 0 0 round 16px)}
 /* ===== v8 ===== */
 /* opening: First Signs written in a script hand, in gold */
 .fs-door .dw{width:min(94vw,920px)}
-.fs-door text.wt{font-family:"Great Vibes","Brush Script MT","Segoe Script",cursive;font-weight:400;font-size:178px;letter-spacing:0;stroke:rgba(255,231,168,.55);stroke-width:.8;stroke-dasharray:none;stroke-dashoffset:0;paint-order:stroke;animation:none}
+.fs-door text.wt{font-family:"Playfair Display",Georgia,"Times New Roman",serif;font-weight:700;font-size:128px;letter-spacing:3px;stroke:rgba(255,231,168,.55);stroke-width:.8;stroke-dasharray:none;stroke-dashoffset:0;paint-order:stroke;animation:none}
 .fs-door.written text.wt{animation:fsdGlow 2.6s .1s ease-in-out infinite alternate}
 .fs-door i:first-child text.wt{fill:url(#fsg1)}
 .fs-door i:last-child text.wt{fill:url(#fsg2)}
