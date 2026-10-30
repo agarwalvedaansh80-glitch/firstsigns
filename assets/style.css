@@ -422,13 +422,6 @@ html{scroll-behavior:smooth}
 .hero.has-3d .lead-fs{color:#2C4A6B}
 
 /* v3.1 immersive layer */
-.preloader{position:fixed;inset:0;z-index:6000;background:var(--fs-navy-deep);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;color:#fff}
-.preloader.done{display:none}
-.pre-mark{display:flex;align-items:center;gap:.8rem;font-family:var(--fs-head);font-weight:600;font-size:1.5rem;letter-spacing:.01em}
-.pre-mark .fs-logo{width:46px;height:46px}
-.pre-bar{width:160px;height:2px;background:rgba(255,255,255,.15);overflow:hidden;border-radius:2px}
-.pre-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--fs-teal),var(--fs-gold))}
-.curtain{position:fixed;inset:0;z-index:5900;background:var(--fs-navy);transform:scaleY(0);transform-origin:top;pointer-events:none}
 .marquee{overflow:hidden;border-top:1px solid var(--fs-line);border-bottom:1px solid var(--fs-line);background:var(--fs-surface);padding:.75rem 0;margin-top:0}
 .marquee-track{display:flex;align-items:center;gap:2.2rem;white-space:nowrap;width:max-content;animation:marquee 38s linear infinite;font-family:var(--fs-head);font-weight:600;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fs-navy)}
 .marquee-track i{width:6px;height:6px;border-radius:50%;background:var(--fs-gold);display:inline-block}
@@ -453,7 +446,7 @@ html{scroll-behavior:smooth}
 .foot-main{position:relative}
 .dropdown-menu.show{animation:ddIn .22s cubic-bezier(.2,.8,.3,1)}
 @keyframes ddIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion: reduce){.marquee-track{animation:none}.preloader{display:none}.dropdown-menu.show{animation:none}[data-scrub] .sw{opacity:1}}
+@media (prefers-reduced-motion: reduce){.marquee-track{animation:none}.dropdown-menu.show{animation:none}[data-scrub] .sw{opacity:1}}
 
 /* v3.2 rich inner pages: header band, toc, rail, at-a-glance, charts, blobs */
 .page-head{position:relative;overflow:hidden;background:linear-gradient(180deg,#FFFFFF 0%,var(--fs-bg) 100%);border-bottom:1px solid var(--fs-line)}
@@ -773,9 +766,6 @@ html.fx-field .fx-lens{opacity:0!important}
 html.reg-lock,html.reg-lock body{overflow:hidden!important}
 .regpanel{left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;width:min(920px,calc(100vw - 32px))!important;max-height:calc(100vh - 32px)!important;padding:0!important;border:0;border-radius:20px!important;display:grid;grid-template-columns:.95fr 1.05fr;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.45);transform:translate(-50%,-46%) scale(.97)!important;opacity:0;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .35s}
 .regpanel.open{transform:translate(-50%,-50%) scale(1)!important;opacity:1}
-html.reg-instant .reg-backdrop{opacity:1;pointer-events:auto;transition:none}
-html.reg-instant .regpanel{transform:translate(-50%,-50%) scale(1)!important;opacity:1;pointer-events:auto;transition:none}
-html.reg-lock .preloader{display:none}
 .reg-side{background:linear-gradient(160deg,var(--fs-navy-deep),var(--fs-navy) 55%,var(--fs-teal-deep));color:#DCE6F2;padding:2.4rem 2.2rem;position:relative;overflow:hidden}
 .reg-side::after{content:"";position:absolute;width:320px;height:320px;right:-120px;bottom:-140px;border-radius:50%;background:radial-gradient(circle,rgba(232,184,75,.35),transparent 65%);animation:fsFloat 6s ease-in-out infinite}
 .reg-brand{display:flex;align-items:center;gap:.65rem;font-family:var(--fs-head);font-weight:700;font-size:1.1rem;color:#fff;margin-bottom:1.6rem}
@@ -871,7 +861,6 @@ html.fx5 .mag{transition:translate .35s cubic-bezier(.2,.8,.2,1),background .15s
 .fx-glow{position:fixed;left:0;top:0;width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:-1;background:radial-gradient(circle,rgba(14,116,144,.13),rgba(232,184,75,.06) 40%,transparent 68%);will-change:transform}
 html.reg-lock .fx-glow{display:none}
 @media print{.fx-glow{display:none}}
-@media(max-width:760px){html.reg-instant .regpanel{transform:none!important}}
 
 .story-num small{display:block;margin-top:.9rem;font-size:.82rem;letter-spacing:.28em;text-align:center;line-height:1}
 .story-num small::before{content:"";display:block;width:28px;height:2px;margin:0 auto .7rem;background:var(--fs-gold);border-radius:2px}
@@ -882,31 +871,6 @@ html.reg-lock .fx-glow{display:none}
 #gaps + p + .table-responsive th{white-space:normal}
 
 /* ===== v6: opening door, consent lock, calmer motion, tighter layout ===== */
-.fs-door{display:none}
-html.door-on .fs-door{position:fixed;inset:0;z-index:30000;display:flex;cursor:pointer}
-html.door-on,html.door-on body{overflow:hidden!important}
-.fs-door i{flex:1;position:relative;overflow:hidden;font-style:normal;background:radial-gradient(900px 520px at 50% 40%,#123A63 0%,#0B2340 62%,#081A31 100%);transition:transform 1.25s cubic-bezier(.77,0,.18,1)}
-.fs-door i:first-child{box-shadow:inset -1px 0 0 rgba(232,184,75,.35)}
-.fs-door i:last-child{box-shadow:inset 1px 0 0 rgba(232,184,75,.35)}
-.fs-door .dm{position:absolute;top:0;bottom:0;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-.fs-door i:first-child .dm{left:0}
-.fs-door i:last-child .dm{right:0}
-.fs-door .dlogo{width:54px;height:54px;opacity:0;animation:fsdUp .8s .05s cubic-bezier(.2,.7,.2,1) forwards}
-.fs-door .dw{width:min(88vw,860px);height:auto;overflow:visible;display:block}
-.fs-door text{font-family:"Libre Franklin",system-ui,sans-serif;font-weight:700;font-size:150px;letter-spacing:-5px;fill:rgba(232,184,75,0);stroke:#E8B84B;stroke-width:1.4;stroke-dasharray:1500;stroke-dashoffset:1500;animation:fsdDraw 1.7s cubic-bezier(.6,.1,.2,1) .15s forwards,fsdFill .8s 1.4s ease forwards}
-.fs-door .db{width:min(60vw,380px);height:2px;background:rgba(255,255,255,.12);overflow:hidden;border-radius:2px}
-.fs-door .db b{display:block;height:100%;background:linear-gradient(90deg,#0E7490,#E8B84B);transform-origin:left;transform:scaleX(0);animation:fsdBar 1.9s cubic-bezier(.6,.1,.2,1) forwards}
-.fs-door .ds{margin:0;padding:0 20px;text-align:center;font:600 12px/1.5 "Public Sans",system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#A9C3D6;opacity:0;animation:fsdUp .8s .7s cubic-bezier(.2,.7,.2,1) forwards}
-@keyframes fsdDraw{to{stroke-dashoffset:0}}
-@keyframes fsdFill{to{fill:rgba(232,184,75,.16)}}
-@keyframes fsdBar{to{transform:scaleX(1)}}
-@keyframes fsdUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-html.door-open .fs-door{pointer-events:none}
-html.door-open .fs-door i:first-child{transform:translateX(-101%)}
-html.door-open .fs-door i:last-child{transform:translateX(101%)}
-html.door-open .fs-door .dm{transition:opacity .5s;opacity:.0}
-@media (max-width:600px){.fs-door .ds{font-size:10px;letter-spacing:.22em}.fs-door .dlogo{width:44px;height:44px}}
-html.fs-wait .draft-ribbon,html.fs-wait .site-header,html.fs-wait main,html.fs-wait .site-footer{opacity:0}
 /* Register locked until consent */
 [data-reg-form] button[type=submit]:disabled{opacity:.42;filter:grayscale(.35);cursor:not-allowed;pointer-events:auto;box-shadow:none}
 [data-reg-form] button[type=submit]:disabled::after{display:none}
@@ -945,12 +909,6 @@ html.fs-wait .draft-ribbon,html.fs-wait .site-header,html.fs-wait main,html.fs-w
 
 /* ===== v7: immersive layer ===== */
 /* opening: the name is written, then filled in gold */
-@keyframes fsdFill{0%{fill:rgba(232,184,75,0)}100%{fill:#E8B84B}}
-.fs-door text{animation:fsdDraw 1.6s cubic-bezier(.6,.1,.2,1) .15s forwards,fsdFill .9s 1.45s ease forwards,fsdGlow 2.4s 1.6s ease-in-out infinite alternate}
-@keyframes fsdGlow{from{filter:drop-shadow(0 0 0 rgba(232,184,75,0))}to{filter:drop-shadow(0 0 18px rgba(232,184,75,.45))}}
-.fs-door .dm::before{content:"";position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 12% 22%,rgba(232,184,75,.7),transparent 60%),radial-gradient(1.2px 1.2px at 82% 30%,rgba(127,182,198,.7),transparent 60%),radial-gradient(1.6px 1.6px at 30% 78%,rgba(232,184,75,.6),transparent 60%),radial-gradient(1.2px 1.2px at 68% 70%,rgba(127,182,198,.6),transparent 60%),radial-gradient(1.4px 1.4px at 50% 12%,rgba(232,184,75,.5),transparent 60%),radial-gradient(1.2px 1.2px at 92% 86%,rgba(232,184,75,.5),transparent 60%);animation:fsdStars 6s linear infinite;pointer-events:none}
-@keyframes fsdStars{from{transform:translateY(0)}to{transform:translateY(-40px)}}
-.fs-door .dm > *{position:relative}
 
 /* footer wordmark sits below the text, as an outline that drifts */
 .site-footer{padding-bottom:clamp(4.5rem,11vw,9.5rem)}
@@ -1009,10 +967,6 @@ html.fx5 .fx-wipe:not(.fx-wiped){clip-path:inset(0 100% 0 0 round 16px)}
 .fx-read i{display:block;width:100%;height:100%;border-radius:3px;background:linear-gradient(180deg,var(--fs-teal),var(--fs-gold));transform-origin:top;transform:scaleY(0)}
 @media(max-width:1199px){.fx-read{display:none}}
 
-/* page-change curtain shows the mark */
-.curtain{display:flex;align-items:center;justify-content:center}
-.fx-cmark{display:inline-flex;align-items:center;gap:12px;font:700 1.4rem/1 "Libre Franklin",system-ui,sans-serif;color:#fff;letter-spacing:-.01em;opacity:.95}
-.fx-cmark svg{width:38px;height:38px}
 
 /* links in the text draw their underline */
 .page-body a:not(.btn),.page-pad > p a:not(.btn){text-decoration:none;background-image:linear-gradient(currentColor,currentColor);background-size:0% 1.5px;background-position:0 100%;background-repeat:no-repeat;box-shadow:inset 0 -1px 0 rgba(14,116,144,.3);transition:background-size .35s cubic-bezier(.2,.7,.2,1),color .2s}
@@ -1023,24 +977,8 @@ html.fx5 .fx-wipe:not(.fx-wiped){clip-path:inset(0 100% 0 0 round 16px)}
 
 /* ===== v8 ===== */
 /* opening: First Signs written in a script hand, in gold */
-.fs-door .dw{width:min(94vw,920px)}
-.fs-door text.wt{font-family:"Playfair Display",Georgia,"Times New Roman",serif;font-weight:700;font-size:128px;letter-spacing:3px;stroke:rgba(255,231,168,.55);stroke-width:.8;stroke-dasharray:none;stroke-dashoffset:0;paint-order:stroke;animation:none}
-.fs-door.written text.wt{animation:fsdGlow 2.6s .1s ease-in-out infinite alternate}
-.fs-door i:first-child text.wt{fill:url(#fsg1)}
-.fs-door i:last-child text.wt{fill:url(#fsg2)}
 @media(max-width:767px){#hero3d{opacity:.38}}
-.fs-door .nib{fill:#FFF1C9;opacity:0;filter:drop-shadow(0 0 6px #E8B84B) drop-shadow(0 0 16px rgba(232,184,75,.9));transition:opacity .4s}
-.fs-door.writing .nib{opacity:1}
-.fs-door.written .nib{opacity:0}
-.fs-door .db b{animation:none;transform:scaleX(0);transition:transform 2.4s cubic-bezier(.6,.1,.2,1)}
-.fs-door.writing .db b{transform:scaleX(1)}
-.fs-door .ds{animation:none;opacity:0;transform:translateY(10px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
-.fs-door.written .ds{opacity:1;transform:none}
-.fs-door .dlogo{animation:fsdUp .9s .1s cubic-bezier(.2,.7,.2,1) forwards}
-@media (max-width:600px){.fs-door .dw{width:96vw}}
 /* the welcome dialog fades in as the doors part */
-html.door-open .regpanel.open,html.door-open .reg-backdrop.open{animation:fsdFade 1s .45s ease both}
-@keyframes fsdFade{from{opacity:0;filter:blur(6px)}to{opacity:1;filter:none}}
 
 /* counters stay on one line */
 .glance-item b .cnt,.stat b .cnt{display:inline!important;font:inherit!important;color:inherit!important;margin:0!important;padding:0!important;letter-spacing:inherit!important;background:none!important}
@@ -1049,7 +987,7 @@ html.door-open .regpanel.open,html.door-open .reg-backdrop.open{animation:fsdFad
 @media(max-width:767px){.fx-top{width:42px;height:42px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
 
 /* cursor v8: the glass lens is the cursor */
-html.fx-cursor2.fx-on,html.fx-cursor2.fx-on body,html.fx-cursor2.fx-on a,html.fx-cursor2.fx-on button,html.fx-cursor2.fx-on label,html.fx-cursor2.fx-on summary,html.fx-cursor2.fx-on .btn,html.fx-cursor2.fx-on [role=button],html.fx-cursor2.fx-on [data-term],html.fx-cursor2.fx-on .fs-door{cursor:none}
+html.fx-cursor2.fx-on,html.fx-cursor2.fx-on body,html.fx-cursor2.fx-on a,html.fx-cursor2.fx-on button,html.fx-cursor2.fx-on label,html.fx-cursor2.fx-on summary,html.fx-cursor2.fx-on .btn,html.fx-cursor2.fx-on [role=button],html.fx-cursor2.fx-on [data-term]{cursor:none}
 html.fx-cursor2 input,html.fx-cursor2 textarea,html.fx-cursor2 select,html.fx-cursor2 [contenteditable]{cursor:auto!important}
 .fx-cur{position:fixed;left:0;top:0;width:38px;height:38px;border-radius:999px;pointer-events:none;z-index:31000;opacity:0;transform-origin:50% 50%;will-change:transform;transition:opacity .25s,background-color .3s,border-color .3s,box-shadow .3s;
 background:rgba(255,255,255,.07);
@@ -1074,3 +1012,43 @@ html.fx-on .fx-cur,html.fx-on .fx-dot{opacity:1}
 html.fx-field .fx-cur,html.fx-field .fx-dot{opacity:0!important}
 @media (pointer:coarse),(prefers-reduced-motion:reduce){.fx-cur,.fx-dot{display:none}}
 @media print{.fx-cur,.fx-dot{display:none!important}}
+
+
+/* ===== October 2026: fast, smooth opening ===== */
+/* door wordmark font, shipped with the site (SIL Open Font License, see assets/fonts) */
+@font-face{font-family:"FS Cormorant";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/cormorant-garamond-latin-600-normal.woff2) format("woff2")}
+/* the door: two halves part once, on the first visit only (about 1.2 seconds).
+   Only transforms and opacity animate, so it runs on the graphics card without stutter. */
+.fs-door{display:none}
+html.door-on .fs-door{position:fixed;inset:0;z-index:30000;display:flex;pointer-events:none;contain:strict}
+.fs-door i{flex:1;position:relative;overflow:hidden;font-style:normal;background:radial-gradient(900px 520px at 50% 40%,#123A63 0%,#0B2340 62%,#081A31 100%);will-change:transform;backface-visibility:hidden;animation:fsdOpenL .7s .5s cubic-bezier(.65,0,.35,1) forwards}
+.fs-door i:last-child{animation-name:fsdOpenR}
+.fs-door i:first-child{box-shadow:inset -1px 0 0 rgba(232,184,75,.3)}
+.fs-door i:last-child{box-shadow:inset 1px 0 0 rgba(232,184,75,.3)}
+.fs-door .dm{position:absolute;top:0;bottom:0;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;animation:fsdIn .35s ease-out both}
+.fs-door i:first-child .dm{left:0}
+.fs-door i:last-child .dm{right:0}
+.fs-door .dlogo{width:50px;height:50px}
+.fs-door .dw{width:min(90vw,860px);height:auto;display:block;overflow:visible}
+.fs-door .wt{font-family:"FS Cormorant","Cormorant Garamond",Georgia,"Times New Roman",serif;font-weight:600;font-size:150px;letter-spacing:2px}
+.fs-door .db{width:min(60vw,360px);height:2px;background:linear-gradient(90deg,#0E7490,#E8B84B);border-radius:2px;opacity:.85}
+.fs-door .ds{margin:0;padding:0 20px;text-align:center;font:600 12px/1.5 "Public Sans",system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#A9C3D6}
+@keyframes fsdIn{from{opacity:0;transform:translate3d(0,8px,0)}to{opacity:1;transform:none}}
+@keyframes fsdOpenL{to{transform:translate3d(-101%,0,0)}}
+@keyframes fsdOpenR{to{transform:translate3d(101%,0,0)}}
+@media (max-width:600px){.fs-door .ds{font-size:10px;letter-spacing:.22em}.fs-door .dlogo{width:42px;height:42px}.fs-door .dw{width:94vw}}
+@media (prefers-reduced-motion:reduce){html.door-on .fs-door{display:none}}
+
+/* phones: the register button sits beside the menu button, always visible */
+.auth-btn-m{white-space:nowrap;padding:.4rem .8rem;margin-right:.5rem;margin-top:0}
+@media(min-width:992px){.auth-btn-m{display:none!important}}
+
+/* footer wordmark: room for the descender of the g on every screen size */
+.site-footer{overflow:hidden}
+.foot-giant{bottom:.06em!important;line-height:1.2!important;padding-bottom:.02em;overflow:visible}
+/* doctor profile: overview and quick links */
+.prof-overview{margin:1.4rem 0 1.6rem;max-width:62rem}
+.prof-overview p{font-size:1.02rem;line-height:1.7}
+.doc-links{margin:.35rem 0 .5rem;font-size:.88rem;font-weight:600}
+.doc-links a{color:var(--fs-teal-deep);text-decoration:none;margin-right:1rem;white-space:nowrap}
+.doc-links a:hover{text-decoration:underline}

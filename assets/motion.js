@@ -5,10 +5,6 @@
    no library, or reduced-motion => the CSS-only version remains. */
 (function () {
   "use strict";
-  setTimeout(function () {
-    var p = document.getElementById("preloader"); if (p) p.classList.add("done");
-    document.documentElement.style.overflow = "";
-  }, 3200);
   var reduce = false;
   try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
   var fine = false;
@@ -43,12 +39,27 @@
   });
 
   /* ---------------- WebGL hero ---------------- */
+  /* three.js (600 KB) is fetched only after the page has fully loaded and the
+     browser is idle, and only on larger screens with a mouse; phones keep the
+     light CSS hero. The page never waits for it. */
   var canvas = document.getElementById("hero3d");
   var hero = document.querySelector(".hero");
-  if (canvas && hero && typeof window.THREE !== "undefined" && !reduce) {
+  var saveData = false;
+  try { saveData = !!(navigator.connection && navigator.connection.saveData); } catch (e) {}
+  if (canvas && hero && !reduce && fine && !saveData && window.innerWidth >= 992) {
+    var heroSrc = (document.body.getAttribute("data-prefix") || "") + "assets/vendor/three.min.js";
+    var loadHero = function () {
+      var sc = document.createElement("script"); sc.src = heroSrc; sc.async = true;
+      sc.onload = startHero; document.head.appendChild(sc);
+    };
+    var later = function () { if (window.requestIdleCallback) requestIdleCallback(loadHero, { timeout: 2500 }); else setTimeout(loadHero, 600); };
+    if (document.readyState === "complete") later(); else window.addEventListener("load", later);
+  }
+  function startHero() {
+    if (typeof window.THREE === "undefined") return;
     try {
-      var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, powerPreference: "high-performance" });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+      var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: false, powerPreference: "low-power" });
+      renderer.setPixelRatio(1);
       renderer.setClearColor(0x000000, 0);
       var scene = new THREE.Scene();
       var camera = new THREE.PerspectiveCamera(38, 2, 0.1, 100);
@@ -139,30 +150,6 @@
     } catch (e) { /* CSS hero remains */ }
   }
 
-  /* ---------------- preloader (once per session) + curtain ---------------- */
-  var pre = document.getElementById("preloader");
-  var curtain = document.getElementById("curtain");
-  var seenIntro = false;
-  try { seenIntro = window.sessionStorage.getItem("fs_intro") === "1"; } catch (e) {}
-  if (pre) { pre.classList.add("done"); }
-  if (false) {
-    if (document.documentElement.classList.contains("reg-lock")) {
-      /* the registration dialog is the welcome; skip the intro for this visit */
-      try { window.sessionStorage.setItem("fs_intro", "1"); } catch (e) {}
-      pre.classList.add("done");
-    }
-    else if (!hasGsap || reduce || seenIntro) { pre.classList.add("done"); }
-    else {
-      try { window.sessionStorage.setItem("fs_intro", "1"); } catch (e) {}
-      document.documentElement.style.overflow = "hidden";
-      var bar = pre.querySelector(".pre-bar span");
-      gsap.timeline({ onComplete: function () { pre.classList.add("done"); document.documentElement.style.overflow = ""; } })
-        .from(".pre-mark", { y: 18, opacity: 0, duration: .5, ease: "power2.out" })
-        .to(bar, { width: "100%", duration: .75, ease: "power2.inOut" }, 0.1)
-        .to(pre, { yPercent: -100, duration: .7, ease: "power4.inOut" }, 0.95);
-    }
-  }
-
   /* ---------------- story stepper (home): click, arrows, keys, auto ---------------- */
   var story = document.querySelector(".story");
   if (story) {
@@ -237,13 +224,13 @@
       var ctx2 = phc.getContext("2d"), pw = 0, ph = 0, head = phc.parentElement;
       var sizeC = function () { pw = head.clientWidth; ph = head.clientHeight; phc.width = pw; phc.height = ph; };
       sizeC(); window.addEventListener("resize", sizeC);
-      var pts = []; for (var q = 0; q < 28; q++) pts.push({ x: Math.random() * 1.2, y: Math.random(), r: 1 + Math.random() * 2.2, s: 0.00025 + Math.random() * 0.0006, c: q % 5 === 0 ? "232,184,75" : "14,116,144" });
+      var pts = []; for (var q = 0; q < 28; q++) pts.push({ x: Math.random() * 1.2, y: Math.random(), r: 1 + Math.random() * 2.2, s: 0.0009 + Math.random() * 0.0016, c: q % 5 === 0 ? "232,184,75" : "14,116,144" });
       var vis = true; onVisible(head, function (v) { vis = v; }, "0px", false);
       var fr = 0;
       var draw = function (ts) {
         requestAnimationFrame(draw);
-        fr = (fr + 1) % 3; if (!vis || fr || document.hidden) return;
-        var t = ts * 0.001; ctx2.clearRect(0, 0, pw, ph);
+        fr = (fr + 1) % 2; if (!vis || fr || document.hidden) return;
+        var t = ts * 0.0025; ctx2.clearRect(0, 0, pw, ph);
         for (var b = 0; b < 2; b++) {
           ctx2.beginPath();
           for (var x = 0; x <= pw; x += 22) {
@@ -388,13 +375,11 @@
   }
 
 
-  /* ---------------- opening: door, then the page arrives slowly ----------------
-     Once per visit the site opens like a door: the name is drawn in gold,
-     the two halves slide apart, and the page comes in piece by piece. If the
-     registration dialog is waiting, the page arrives as soon as it closes. */
+  /* ---------------- opening: the page is visible at once ----------------
+     The door (first visit only) is pure CSS and never hides the page.
+     A light entrance plays on the heading: header, menu and text are never hidden. */
   (function () {
-    var d = document.documentElement, entered = false, slow = d.classList.contains("door-on");
-    function inView(el) { var r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < window.innerHeight * .98 && r.height > 0; }
+    var d = document.documentElement;
     function splitWords(h) {
       if (!h || h.dataset.split || h.querySelector("*:not(br):not(span)")) return null;
       h.dataset.split = "1";
@@ -404,79 +389,13 @@
       return h.querySelectorAll(".mw > span");
     }
     function enter() {
-      if (entered) return; entered = true;
-      d.classList.remove("fs-wait");
       if (!hasGsap || reduce) return;
-      var k = slow ? 1.35 : .6;
-      var tl = gsap.timeline();
-      var top = [].slice.call(document.querySelectorAll(".draft-ribbon, .site-header"));
-      if (top.length) tl.from(top, { y: -26, opacity: 0, duration: .9 * k, ease: "power3.out", stagger: .08, clearProps: "transform,opacity" }, 0);
       var head = document.querySelector(".hero .hero-inner") || document.querySelector(".page-head .ph-inner");
-      if (head) {
-        var h1 = head.querySelector("h1"), words = splitWords(h1);
-        var kids = [].slice.call(head.querySelectorAll(":scope > *, :scope > .row > * > *, :scope > div > *")).filter(function (el) { return el !== h1 && !el.contains(h1) && el.offsetParent !== null; });
-        var crumbs = document.querySelector(".crumbs");
-        if (crumbs) tl.from(crumbs, { opacity: 0, y: 10, duration: .7 * k, ease: "power2.out", clearProps: "transform,opacity" }, .25 * k);
-        if (words && words.length) tl.from(words, { yPercent: 110, duration: 1.1 * k, ease: "power4.out", stagger: .075 * k, clearProps: "transform" }, .35 * k);
-        if (kids.length) tl.from(kids, { y: 26, opacity: 0, filter: "blur(6px)", duration: 1.15 * k, ease: "power3.out", stagger: .2 * k, clearProps: "transform,opacity,filter" }, .75 * k);
-      }
-      var art = document.querySelectorAll(".ph-art, .ph-orb, .hero-orbs, #hero3d, .hero-lines");
-      if (art.length) tl.from(art, { opacity: 0, scale: .94, duration: 1.6 * k, ease: "power2.out", clearProps: "transform,opacity" }, .5 * k);
-      var below = [].slice.call(document.querySelectorAll("main > *:not(.hero):not(.page-head):not(.crumbs), .page-pad > *, .page-body > *, main > section > .container > *"))
-        .filter(function (el) { return !el.closest(".hero") && !el.closest(".page-head") && inView(el) && !below_has(el); });
-      function below_has(el) { return false; }
-      below = below.filter(function (el, i) { return !below.some(function (o) { return o !== el && o.contains(el); }); }).slice(0, 8);
-      if (below.length) tl.from(below, { y: 34, opacity: 0, duration: 1.1 * k, ease: "power3.out", stagger: .16 * k, clearProps: "transform,opacity" }, 1.35 * k);
+      if (!head) return;
+      var words = splitWords(head.querySelector("h1"));
+      if (words && words.length) gsap.from(words, { yPercent: 105, duration: .7, ease: "power3.out", stagger: .04, clearProps: "transform" });
     }
-    function startWriting(done) {
-      var door = document.getElementById("fsDoor"); if (!door) { done(); return; }
-      var rects = door.querySelectorAll(".wr"), nibs = door.querySelectorAll(".nib"), txt = door.querySelector(".wt");
-      var ran = false;
-      var go = function () {
-        if (ran) return; ran = true;
-        var x0 = 80, x1 = 920, top = 40, bot = 220;
-        try { var bb = txt.getBBox(); if (bb.width > 50) { x0 = bb.x; x1 = bb.x + bb.width; top = bb.y; bot = bb.y + bb.height; } } catch (e) {}
-        door.classList.add("writing");
-        var t0 = performance.now(), D = 2400, mid = top + (bot - top) * .55, amp = (bot - top) * .22;
-        var step = function (t) {
-          var q = Math.min(1, (t - t0) / D), e = q < .5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2;
-          var x = x0 + e * (x1 - x0);
-          rects.forEach(function (r) { r.setAttribute("width", Math.max(0, x + 6)); });
-          nibs.forEach(function (nb) { nb.setAttribute("cx", x.toFixed(1)); nb.setAttribute("cy", (mid + Math.sin(q * 30) * amp).toFixed(1)); });
-          if (q < 1) requestAnimationFrame(step);
-          else { rects.forEach(function (r) { r.setAttribute("width", 1000); }); door.classList.add("written"); setTimeout(done, 650); }
-        };
-        requestAnimationFrame(step);
-      };
-      try {
-        if (document.fonts && document.fonts.load) document.fonts.load('700 128px "Playfair Display"').then(function () { setTimeout(go, 120); }, go);
-        else go();
-      } catch (e) { go(); }
-      setTimeout(go, 1500);
-    }
-    function afterDoor() {
-      if (d.classList.contains("reg-lock")) {
-        var done = function () { document.removeEventListener("fs:regclosed", done); slow = true; setTimeout(enter, 60); };
-        document.addEventListener("fs:regclosed", done);
-        d.classList.remove("fs-wait");
-      } else enter();
-    }
-    if (d.classList.contains("door-on") && document.getElementById("fsDoor")) {
-      var opened = false;
-      var open = function () {
-        if (opened) return; opened = true;
-        try { window.sessionStorage.setItem("fs_door", "1"); } catch (e) {}
-        d.classList.add("door-open");
-        setTimeout(function () { d.classList.remove("door-on"); }, 1350);
-        setTimeout(afterDoor, d.classList.contains("reg-lock") ? 250 : 950);
-      };
-      startWriting(function () { setTimeout(open, 750); });
-      setTimeout(open, 7500);
-      document.getElementById("fsDoor").addEventListener("click", open);
-    } else {
-      d.classList.remove("door-on");
-      afterDoor();
-    }
+    if (d.classList.contains("door-on")) setTimeout(enter, 750); else enter();
   })();
 
   /* ---------------- hero text entrance ---------------- */
@@ -715,7 +634,7 @@
     ring.style.strokeDasharray = CIRC;
     var lastY = window.scrollY, vel = 0, ticking = false, parked = false, docH = 0, lastP = -1;
     var measure = function () { docH = d.scrollHeight - window.innerHeight; };
-    measure(); window.addEventListener("resize", measure); window.addEventListener("load", measure); setInterval(measure, 2000);
+    measure(); window.addEventListener("resize", measure); window.addEventListener("load", measure);
     par.concat(headInner ? [headInner] : []).forEach(function (el) { el.style.willChange = "translate, opacity"; });
     var tick = function () {
       ticking = false;
@@ -805,11 +724,6 @@
       upd();
     }
 
-    /* 8. page change: the curtain carries the First Signs mark */
-    var cur = document.getElementById("curtain");
-    if (cur && !cur.querySelector(".fx-cmark")) {
-      cur.innerHTML = '<span class="fx-cmark"><svg viewBox="0 0 44 44" aria-hidden="true"><rect x="1" y="1" width="42" height="42" rx="10" fill="#0F2E52" stroke="#3E6E8E"/><path d="M9 29.5 Q 22 21.5 35 29.5" fill="none" stroke="#7FB6C6" stroke-width="2.2" stroke-linecap="round"/><path d="M9 34 Q 22 27.5 35 34" fill="none" stroke="#3E6E8E" stroke-width="1.6" stroke-linecap="round" opacity="0.8"/><circle cx="22" cy="16.5" r="4.6" fill="#E8B84B"/></svg>First Signs</span>';
-    }
   })();
 
 
@@ -833,23 +747,4 @@
     });
   })();
 
-  /* ---------------- page transitions ---------------- */
-  document.addEventListener("click", function (e) {
-    var a = e.target.closest("a[href]");
-    if (!a) return;
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target === "_blank" || a.hasAttribute("download")) return;
-    var href = a.getAttribute("href");
-    if (!href || href.charAt(0) === "#" || /^(https?:|mailto:|tel:)/.test(href) || !/\.html(#.*)?$/.test(href)) return;
-    e.preventDefault();
-    if (curtain && hasGsap && !reduce) {
-      gsap.to(curtain, { scaleY: 1, transformOrigin: "bottom", duration: .3, ease: "power3.inOut", onComplete: function () { window.location.href = href; } });
-    } else {
-      document.body.classList.add("leaving");
-      setTimeout(function () { window.location.href = href; }, 200);
-    }
-  });
-  if (curtain && hasGsap && !reduce && seenIntro) {
-    gsap.set(curtain, { scaleY: 1, transformOrigin: "top" });
-    gsap.to(curtain, { scaleY: 0, duration: .6, ease: "power4.inOut", delay: .05 });
-  } else if (curtain && hasGsap) { gsap.set(curtain, { scaleY: 0 }); }
 })();

@@ -110,9 +110,10 @@
     document.documentElement.classList.remove("reg-lock");
     try { document.dispatchEvent(new Event("fs:regclosed")); } catch (e) {}
     if (asGuest && !me()) { try { window.sessionStorage.setItem("fs_guest", "1"); } catch (e) {} }
-    if (!location.hash) { try { window.scrollTo(0, 0); } catch (e) {} }
     if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
   }
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && panel && panel.classList.contains("open")) closePanel(true); });
+  if (backdrop) backdrop.addEventListener("click", function () { closePanel(true); });
   /* keep keyboard focus inside the dialog while it is open */
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Tab" || !panel || !panel.classList.contains("open")) return;
@@ -286,7 +287,7 @@
       if (m) {
         b.textContent = m.name.split(" ")[0];
       } else {
-        b.textContent = "Register / sign in";
+        b.textContent = b.getAttribute("data-auth-short") || "Register / sign in";
       }
     });
   }
@@ -365,17 +366,15 @@
   }
   (function () {
     var root = document.documentElement;
-    /* registered once = never asked again; everyone else sees it first,
-       on every page they open, every time.
-       It opens at once, with no wait: a small script in the page head has
-       already drawn it before the page appears. */
-    var show = !me();
-    if (show) {
-      openPanel();
-      var dropInstant = function () { root.classList.remove("reg-instant"); };
-      requestAnimationFrame(dropInstant); setTimeout(dropInstant, 120);
-    } else {
-      root.classList.remove("reg-instant");
+    /* registered once = never asked again. Everyone else is invited once per
+       visit, shortly after the page is already showing (after the door on a
+       first visit), and can close it at any time. The Register / sign in
+       button in the header opens it whenever they like. */
+    var asked = false;
+    try { asked = window.sessionStorage.getItem("fs_reg_asked") === "1"; } catch (e) {}
+    if (!me() && !asked) {
+      try { window.sessionStorage.setItem("fs_reg_asked", "1"); } catch (e) {}
+      setTimeout(function () { if (!me() && !(panel && panel.classList.contains("open"))) openPanel(); }, root.classList.contains("door-on") ? 1500 : 900);
     }
     /* someone registered on another device: recognise them and close it quietly */
     Promise.resolve(cap.ready).then(async function () {
